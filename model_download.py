@@ -1,7 +1,6 @@
 import huggingface_hub
 from huggingface_hub import snapshot_download
 
-huggingface_hub.login("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", add_to_git_credential=True)
 snapshot_download(
     repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1",
     repo_type="model",
