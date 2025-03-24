@@ -21,7 +21,7 @@ def translate_with_ollama(text):
         "prompt": prompt,
         "stream": False,
     }
-    response = requests.post("http://135.251.50.42:11434/api/generate", json=data)
+    response = requests.post("http://135.251.50.42: /api/generate", json=data)
     print(response)
     if response.status_code == 200:
         print(response.text)

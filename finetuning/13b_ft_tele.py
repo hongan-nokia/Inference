@@ -9,7 +9,7 @@ from datasets import load_dataset
 import torch
 from peft import prepare_model_for_kbit_training
 from peft import LoraConfig, get_peft_model
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, DataCollatorForSeq2Seq
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, DataCollatorForSeq2Seq, Qwen2VLForConditionalGeneration
 import transformers
 from datetime import datetime
 
@@ -112,6 +112,10 @@ def generate_and_tokenize_prompt2(prompt):
 
 tokenized_train_dataset = train_dataset.map(generate_and_tokenize_prompt2)
 tokenized_eval_dataset = eval_dataset.map(generate_and_tokenize_prompt2)
+
+try:
+    a = 1
+except  Exception  as e:
 
 model.gradient_checkpointing_enable()
 model = prepare_model_for_kbit_training(model)
