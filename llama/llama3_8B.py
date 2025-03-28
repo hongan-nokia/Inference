@@ -5,6 +5,7 @@
 @Email: honggang.yuan@nokia-sbell.com
 Description: 
 """
+import numpy as np
 import transformers
 
 # -*- coding: utf-8 -*-
@@ -23,9 +24,10 @@ from langchain.embeddings.sentence_transformer import SentenceTransformerEmbeddi
 from langchain.llms import HuggingFacePipeline
 from langchain.vectorstores import Chroma
 from transformers import (
-    LlamaForCausalLM,
+    LlamaForCausalLM, AutoModelForCausalLM,
     pipeline,
-    AutoTokenizer
+    AutoTokenizer,
+    BertTokenizer, BertModel
 )
 
 
