@@ -29,13 +29,13 @@ from peft import PeftModel, LoraConfig, prepare_model_for_kbit_training, get_pef
 
 warnings.filterwarnings("ignore")
 
-base_model_path = '/guozhanqiu/yuan/models/llama2_7B_chat_hf/'
+model_dir = '/guozhanqiu/yuan/models/llama2_7B_chat_hf/'
 
 original_model = LlamaForCausalLM.from_pretrained(
-    base_model_path,
+    model_dir,
     device_map='cuda:0',
 )
 original_model = original_model.eval()
-tokenizer = LlamaTokenizer.from_pretrained(base_model_path)
+tokenizer = LlamaTokenizer.from_pretrained(model_dir)
 
 print(original_model)
