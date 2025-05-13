@@ -8,7 +8,7 @@ Description:
     Refer to the code of DoRA·······
 
 """
-
+import argparse
 import os
 import sys
 from typing import List, Optional, Union
@@ -17,6 +17,7 @@ import fire
 import torch
 import transformers
 from datasets import load_dataset
+import yaml
 
 sys.path.append(os.path.join(os.getcwd(), "peft/src/"))
 
@@ -29,6 +30,34 @@ from peft import (
 )
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer, AutoModel
+
+
+def load_config(config_path: str):
+    with open(config_path, "r") as f:
+        y_config = yaml.safe_load(f)
+    return y_config
+
+
+def flatten_config(nest_config):
+    """Flatten nested config dictionary."""
+    f_config = {}
+    for section in nest_config:
+        for key, value in nest_config[section].items():
+            f_config[key] = value
+    return f_config
+
+
+def validate_config(val_config: dict):
+    """Validate that all required parameters are present in the config."""
+    required_fields = [
+        'base_model',
+        'data_path',
+        'output_dir',
+        # Add other required fields if they must not be empty or None
+    ]
+    for field in required_fields:
+        if field not in val_config or val_config[field] is None or val_config[field] == '':
+            raise ValueError(f"Missing or invalid required config field: {field}")
 
 
 def print_trainable_parameters(trained_model):
@@ -91,7 +120,6 @@ def train(
         lora_alpha: int = 16,
         lora_layers: int = 0,
         lora_dropout: float = 0.05,
-        lora_target_modules: List[str] = None,
         # bottleneck adapter hyperparams
         bottleneck_size: int = 256,
         non_linearity: str = "tanh",
@@ -129,7 +157,6 @@ def train(
         f"lora_alpha: {lora_alpha}\n"
         f"lora_layers: {lora_layers}\n"
         f"lora_dropout: {lora_dropout}\n"
-        f"lora_target_modules: {lora_target_modules}\n"
         f"--------------------------------------------"
         f"bottleneck_size: {bottleneck_size}\n"
         f"non_linearity: {non_linearity}\n"
@@ -233,31 +260,31 @@ def train(
 
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=use_gradient_checkpointing)
     print(model)
-    if adapter_name == "lora":
-        print("LoRA init...")
-        if lora_layers > 0:
-            lora_modules = [
-                f"model.layers.{i}.self_attn.{proj}"
-                for i in range(lora_layers)
-                for proj in target_modules
-            ]
-        elif lora_layers < 0:
-            num_layers = model.config.num_hidden_layers
-            lora_modules = [
-                f"model.layers.{i}.self_attn.{proj}"
-                for i in range(num_layers + lora_layers, num_layers)
-                for proj in target_modules
-            ]
-        else:
-            lora_modules = target_modules
-        lora_config = LoraConfig(
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            target_modules=lora_modules,
-            lora_dropout=lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM",
-        )
+
+    print("LoRA init...")
+    if lora_layers > 0:
+        lora_modules = [
+            f"model.layers.{i}.self_attn.{proj}"
+            for i in range(lora_layers)
+            for proj in target_modules
+        ]
+    elif lora_layers < 0:
+        num_layers = model.config.num_hidden_layers
+        lora_modules = [
+            f"model.layers.{i}.self_attn.{proj}"
+            for i in range(num_layers + lora_layers, num_layers)
+            for proj in target_modules
+        ]
+    else:
+        lora_modules = target_modules
+    lora_config = LoraConfig(
+        r=lora_r,
+        lora_alpha=lora_alpha,
+        target_modules=lora_modules,
+        lora_dropout=lora_dropout,
+        bias="none",
+        task_type="CAUSAL_LM",
+    )
 
     model = get_peft_model(model, lora_config)
 
@@ -352,4 +379,11 @@ def train(
 
 
 if __name__ == '__main__':
-    fire.Fire(train)
+    parser = argparse.ArgumentParser(description="Finetune script with YAML config")
+    parser.add_argument('--config', type=str, required=True, help='Path to the YAML config file')
+    args = parser.parse_args()
+    config = load_config(args.config)
+    flat_config = flatten_config(config)
+    validate_config(flat_config)
+    print(**flat_config)
+    # fire.Fire(train(**flat_config))

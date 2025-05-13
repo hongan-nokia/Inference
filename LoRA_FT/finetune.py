@@ -8,7 +8,7 @@ Description:
     Refer to the code of DoRA·······
 
 """
-
+import argparse
 import os
 import sys
 from typing import List, Optional, Union
@@ -17,6 +17,7 @@ import fire
 import torch
 import transformers
 from datasets import load_dataset
+import yaml
 
 sys.path.append(os.path.join(os.getcwd(), "peft/src/"))
 
@@ -29,6 +30,12 @@ from peft import (
 )
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer, AutoModel
+
+
+def load_config(config_path: str):
+    with open(config_path, "r") as f:
+        y_config = yaml.safe_load(f)
+    return y_config
 
 
 def print_trainable_parameters(trained_model):
@@ -233,31 +240,31 @@ def train(
 
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=use_gradient_checkpointing)
     print(model)
-    if adapter_name == "lora":
-        print("LoRA init...")
-        if lora_layers > 0:
-            lora_modules = [
-                f"model.layers.{i}.self_attn.{proj}"
-                for i in range(lora_layers)
-                for proj in target_modules
-            ]
-        elif lora_layers < 0:
-            num_layers = model.config.num_hidden_layers
-            lora_modules = [
-                f"model.layers.{i}.self_attn.{proj}"
-                for i in range(num_layers + lora_layers, num_layers)
-                for proj in target_modules
-            ]
-        else:
-            lora_modules = target_modules
-        lora_config = LoraConfig(
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            target_modules=lora_modules,
-            lora_dropout=lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM",
-        )
+
+    print("LoRA init...")
+    if lora_layers > 0:
+        lora_modules = [
+            f"model.layers.{i}.self_attn.{proj}"
+            for i in range(lora_layers)
+            for proj in target_modules
+        ]
+    elif lora_layers < 0:
+        num_layers = model.config.num_hidden_layers
+        lora_modules = [
+            f"model.layers.{i}.self_attn.{proj}"
+            for i in range(num_layers + lora_layers, num_layers)
+            for proj in target_modules
+        ]
+    else:
+        lora_modules = target_modules
+    lora_config = LoraConfig(
+        r=lora_r,
+        lora_alpha=lora_alpha,
+        target_modules=lora_modules,
+        lora_dropout=lora_dropout,
+        bias="none",
+        task_type="CAUSAL_LM",
+    )
 
     model = get_peft_model(model, lora_config)
 
@@ -352,4 +359,10 @@ def train(
 
 
 if __name__ == '__main__':
-    fire.Fire(train)
+    parser = argparse.ArgumentParser(description="Finetune script with YAML config")
+    parser.add_argument('--config', type=str, required=True, help='Path to the YAML config file')
+    args = parser.parse_args()
+    config = load_config(args.config)
+    print(**config)
+
+    fire.Fire(train(**config))
