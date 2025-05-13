@@ -13,7 +13,7 @@ import os
 import sys
 from typing import List, Optional, Union
 
-import fire
+# import fire
 import torch
 import transformers
 from datasets import load_dataset
@@ -152,22 +152,22 @@ def train(
         f"cutoff_len: {cutoff_len}\n"
         f"val_set_size: {val_set_size}\n"
         f"use_gradient_checkpointing: {use_gradient_checkpointing}\n"
-        f"--------------------------------------------"
+        f"--------------------------------------------\n"
         f"lora_r: {lora_r}\n"
         f"lora_alpha: {lora_alpha}\n"
         f"lora_layers: {lora_layers}\n"
         f"lora_dropout: {lora_dropout}\n"
-        f"--------------------------------------------"
+        f"--------------------------------------------\n"
         f"bottleneck_size: {bottleneck_size}\n"
         f"non_linearity: {non_linearity}\n"
         f"adapter_dropout: {adapter_dropout}\n"
         f"use_parallel_adapter: {use_parallel_adapter}\n"
         f"use_adapterp: {use_adapterp}\n"
         f"target_modules: {target_modules}\n"
-        f"--------------------------------------------"
+        f"--------------------------------------------\n"
         f"train_on_inputs: {train_on_inputs}\n"
         f"group_by_length: {group_by_length}\n"
-        f"--------------------------------------------"
+        f"--------------------------------------------\n"
         f"wandb_project: {wandb_project}\n"
         f"wandb_run_name: {wandb_run_name}\n"
         f"wandb_watch: {wandb_watch}\n"
@@ -208,7 +208,7 @@ def train(
             trust_remote_code=True,
         )
 
-    if model.config.mode_type == 'llama':
+    if model.config.model_type == 'llama':
         if 'Llama-3' in base_model or 'llama-3' in base_model:
             print("load llama-3 tokenizer")
             tokenizer = AutoTokenizer.from_pretrained(base_model)
@@ -217,7 +217,7 @@ def train(
     else:
         tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
 
-    tokenizer.pad_token_type_id = (
+    tokenizer.pad_token_id = (
         0  # unk. we want this to be different from the eos token
     )
     tokenizer.padding_side = "left"  # Allowing batched inference
@@ -240,7 +240,7 @@ def train(
             if "chatglm" not in base_model:
                 result["attention_mask"].append(1)
 
-        result['labels'] = result['input_ids'].copy
+        result['labels'] = result['input_ids'].copy()
 
         if "chatglm" in base_model:
             return {"input_ids": result["input_ids"], "labels": result["labels"]}
@@ -317,10 +317,10 @@ def train(
 
     if val_set_size > 0:
         train_val = data["train"].train_test_split(test_size=val_set_size, shuffle=True, seed=42)
-        train_data = train_val["train"].shuffle.map(generate_and_tokenize_prompt)
-        val_data = train_val["test"].shuffle.map(generate_and_tokenize_prompt)
+        train_data = train_val["train"].shuffle().map(generate_and_tokenize_prompt)
+        val_data = train_val["test"].shuffle().map(generate_and_tokenize_prompt)
     else:
-        train_data = data["train"].shuffle.map(generate_and_tokenize_prompt)
+        train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
         val_data = None
 
     if torch.cuda.device_count() > 1:
@@ -341,7 +341,7 @@ def train(
             fp16=True,
             logging_steps=10,
             optim='adamw_torch',
-            evaluation_strategy='steps' if val_set_size > 0 else "no",
+            eval_strategy='steps' if val_set_size > 0 else "no",
             save_strategy="steps",
             eval_steps=eval_step if val_set_size > 0 else None,
             save_steps=save_step,
@@ -370,7 +370,8 @@ def train(
     if torch.__version__ >= "2" and sys.platform != "win32":
         model = torch.compile(model)
 
-    trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+    # trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+    trainer.train()
 
     model.save_pretrained(output_dir)
     print(
@@ -385,5 +386,6 @@ if __name__ == '__main__':
     config = load_config(args.config)
     flat_config = flatten_config(config)
     validate_config(flat_config)
-    print(**flat_config)
+
     # fire.Fire(train(**flat_config))
+    train(**flat_config)

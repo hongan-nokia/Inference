@@ -10,7 +10,7 @@ training:
   batch_size: 16
   micro_batch_size: 16
   num_epochs: 3
-  learning_rate: 2e-4
+  learning_rate: 0.0002
   weight_decay: 0.0
   use_gradient_checkpointing: false
   eval_step: 80
@@ -32,9 +32,9 @@ llm:
   train_on_inputs: True
   group_by_length: False
 wandb:
-  wandb_project: ""
+  wandb_project: "llama3_8B"
   wandb_run_name: ""
   wandb_watch: ""
   wandb_log_model: ""
 checkpoint:
-  resume_from_checkpoint: None
+  resume_from_checkpoint: ""
