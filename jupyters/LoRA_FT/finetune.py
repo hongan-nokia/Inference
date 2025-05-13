@@ -401,7 +401,7 @@ if __name__ == '__main__':
             flat_config['output_dir'] = args.output_dir
 
         # Re-validate config after overrides
-        flat_config = validate_config(flat_config)
+        validate_config(flat_config)
         train(**flat_config)
     except Exception as e:
         print(f"Error: {e}")
