@@ -382,10 +382,27 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Finetune script with YAML config")
     parser.add_argument('--config', type=str, required=True, help='Path to the YAML config file')
+    parser.add_argument('--base_model', type=str, default=None, help='Override base_model in YAML config')
+    parser.add_argument('--lora_layers', type=int, default=32, help='Override lora_layers in YAML config')
+    parser.add_argument('--output_dir', type=str, default=None, help='Override output_dir in YAML config')
     args = parser.parse_args()
-    config = load_config(args.config)
-    flat_config = flatten_config(config)
-    validate_config(flat_config)
 
-    # fire.Fire(train(**flat_config))
-    train(**flat_config)
+    try:
+        config = load_config(args.config)
+        flat_config = flatten_config(config)
+        validate_config(flat_config)
+
+        # Override YAML config with command-line arguments if provided
+        if args.base_model is not None:
+            flat_config['base_model'] = args.base_model
+        if args.lora_layers is not None:
+            flat_config['lora_layers'] = args.lora_layers
+        if args.output_dir is not None:
+            flat_config['output_dir'] = args.output_dir
+
+        # Re-validate config after overrides
+        flat_config = validate_config(flat_config)
+        train(**flat_config)
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
