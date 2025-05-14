@@ -237,16 +237,20 @@ def main(
         wdecompose_target_module_found = False
 
         if target_module_found:
+            print("======================================================")
+            print("Target module found")
             print(f"found {key}")
-            # print(f"module.merged {module.merged}")
-            # print(f"module.merge_weights {module.merge_weights}")
+            print(f"module.merged {module.merged}")
+            print(f"module.merge_weights {module.merge_weights}")
             module.merge_weights = True
             module.train(mode=False)
 
         elif wdecompose_target_module_found:
+            print("======================================================")
+            print("WDEcompose module found")
             print(f"found {key}")
-            # print(f"module.merged {module.merged}")
-            # print(f"module.merge_weights {module.merge_weights}")
+            print(f"module.merged {module.merged}")
+            print(f"module.merge_weights {module.merge_weights}")
             module.merge_weights = True
             module.train(mode=False)
 
