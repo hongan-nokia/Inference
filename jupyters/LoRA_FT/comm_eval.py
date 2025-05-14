@@ -25,6 +25,19 @@ else:
     device = "cpu"
 
 
+class color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"], required=True)
@@ -211,7 +224,10 @@ def main(
             )
         s = generation_output.sequences
         outputs = tokenizer.batch_decode(s, skip_special_tokens=True)
-        print(f"outputs: {outputs}")
+        print("\n---------------------------")
+        print(f"{color.RED}{' LoRA FT Model outputs : ' + outputs}{color.END}\n")
+        print("---------------------------")
+
         outputs = [o.split("### Response:")[-1].strip() for o in outputs]
         return outputs
 
