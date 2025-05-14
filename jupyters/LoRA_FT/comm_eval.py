@@ -157,31 +157,31 @@ def extract_answer(args, sentence: str) -> float:
     dataset = args.dataset
     if dataset == 'boolq':
         sentence_ = sentence.strip()
-        pred_answers = re.findall(r'true|false', sentence_)
+        pred_answers = re.findall(r'true|false', sentence_, flags=re.IGNORECASE)
         if not pred_answers:
             return ""
         return pred_answers[0]
     elif dataset == 'piqa':
         sentence_ = sentence.strip()
-        pred_answers = re.findall(r'solution1|solution2', sentence_)
+        pred_answers = re.findall(r'solution1|solution2', sentence_, flags=re.IGNORECASE)
         if not pred_answers:
             return ""
         return pred_answers[0]
     elif dataset in ['social_i_qa', 'ARC-Challenge', 'ARC-Easy', 'openbookqa']:
         sentence_ = sentence.strip()
-        pred_answers = re.findall(r'answer1|answer2|answer3|answer4|answer5', sentence_)
+        pred_answers = re.findall(r'answer1|answer2|answer3|answer4|answer5', sentence_, flags=re.IGNORECASE)
         if not pred_answers:
             return ""
         return pred_answers[0]
     elif dataset == 'hellaswag':
         sentence_ = sentence.strip()
-        pred_answers = re.findall(r'ending1|ending2|ending3|ending4', sentence_)
+        pred_answers = re.findall(r'ending1|ending2|ending3|ending4', sentence_, flags=re.IGNORECASE)
         if not pred_answers:
             return ""
         return pred_answers[0]
     elif dataset == 'winogrande':
         sentence_ = sentence.strip()
-        pred_answers = re.findall(r'option1|option2', sentence_)
+        pred_answers = re.findall(r'option1|option2', sentence_, flags=re.IGNORECASE)
         if not pred_answers:
             return ""
         return pred_answers[0]
@@ -224,11 +224,10 @@ def main(
             )
         s = generation_output.sequences
         outputs = tokenizer.batch_decode(s, skip_special_tokens=True)
-        print("\n---------------------------")
-        print(f"{color.RED}{' LoRA FT Model outputs : ' + outputs}{color.END}\n")
-        print("---------------------------")
-
         outputs = [o.split("### Response:")[-1].strip() for o in outputs]
+        # print("\n---------------------------")
+        # print(f"{color.RED}LoRA FT Model outputs ... {outputs}{color.END}")
+        # print("---------------------------\n")
         return outputs
 
     save_file = f'experiment/{args.model}-{args.adapter}-{args.dataset}.json'
@@ -253,11 +252,11 @@ def main(
         wdecompose_target_module_found = False
 
         if target_module_found:
-            print("======================================================")
-            print("Target module found")
-            print(f"module {module}")
-            print(f"found {key}")
-            print(f"module.merged {module.merged}")
+            # print("======================================================")
+            # print("Target module found")
+            # print(f"module {module}")
+            # print(f"found {key}")
+            # print(f"module.merged {module.merged}")
             # print(f"module.merge_weights {module.merge_weights}")
             # module.merge_weights = True
             module.train(mode=False)
@@ -286,7 +285,7 @@ def main(
             label = data.get('answer')
             flag = False
             predict = extract_answer(args, output)
-            if label == predict:
+            if label.lower() == predict.lower():
                 correct += 1
                 flag = True
             new_data = copy.deepcopy(data)
@@ -294,10 +293,16 @@ def main(
             new_data['pred'] = predict
             new_data['flag'] = flag
             output_data.append(new_data)
-            print(data["instruction"])
-            print(output)
-            print('prediction:', predict)
-            print('label:', label)
+            print("============")
+            print(f"{color.PURPLE}SourceData.instruction is ...\n {data['instruction']}{color.RED}")
+            print("------------")
+            print(f"{color.GREEN}LoRA FT Model output ... \n{output}{color.RED}")
+            print("------------")
+            print(f"{color.RED}Right answer ... {label}{color.END}")
+            print("============")
+            # print('prediction:', predict)
+            # print('label:', label)
+            
         print('---------------')
         print(f'\rtest:{idx + 1}/{total} | accuracy {correct}  {correct / current}')
         print('---------------')

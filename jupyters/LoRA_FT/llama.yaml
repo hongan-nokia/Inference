@@ -6,7 +6,7 @@ data:
   cutoff_len: 256
   val_set_size: 120
 training:
-  output_dir: "./all_layers"
+  output_dir: "./llama2_all_layers"
   batch_size: 16
   micro_batch_size: 16
   num_epochs: 3
