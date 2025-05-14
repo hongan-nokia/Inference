@@ -12,8 +12,6 @@ import re
 import sys
 import argparse
 
-import fire
-
 import torch
 
 sys.path.append(os.path.join(os.getcwd(), "peft/src/"))
@@ -31,10 +29,11 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"], required=True)
     parser.add_argument('--adapter', default='LoRA', required=False)
+    parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--base_model', type=str, required=True)
     parser.add_argument('--lora_weights', type=str, required=True)
     parser.add_argument('--batch_size', type=int, required=True)
-    parser.add_argument('--load_8bit', action='store_true', default=False)
+    parser.add_argument('--load_8bit', action='store_true', default=False, required=False)
 
     return parser.parse_args()
 
@@ -76,7 +75,7 @@ def load_data(args) -> list:
     Returns:
 
     """
-    file_path = f'dataset/{args.dataset}/test.json'
+    file_path = f'/data/Datasets/LLM-Adapters/dataset/{args.dataset}/test.json'
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"can not find dataset file : {file_path}")
     json_data = json.load(open(file_path, 'r'))
@@ -226,11 +225,14 @@ def main(
 
     print("Merge LoRA weights into the original weights")
     key_list = [(key, module) for key, module in model.model.named_modules()]
+    print("------------------------------------------------------------------------------------")
+    print(f"model.peft_config is ... \n{model.peft_config}")
+    print("------------------------------------------------------------------------------------")
     for key, module in key_list:
-        if isinstance(model.peft_config.target_modules, str):
-            target_module_found = re.fullmatch(model.peft_config.target_modules, key)
+        if isinstance(model.peft_config['default'].target_modules, str):
+            target_module_found = re.fullmatch(model.peft_config['default'].target_modules, key)
         else:
-            target_module_found = any(key.endswith(target_key) for target_key in model.peft_config.target_modules)
+            target_module_found = any(key.endswith(target_key) for target_key in model.peft_config['default'].target_modules)
 
         wdecompose_target_module_found = False
 
