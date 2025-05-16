@@ -47,6 +47,7 @@ def parse_args():
     parser.add_argument('--lora_weights', type=str, required=True)
     parser.add_argument('--batch_size', type=int, required=True)
     parser.add_argument('--load_8bit', action='store_true', default=False, required=False)
+    parser.add_argument('--output_dir', type=str, required=True)
 
     return parser.parse_args()
 
@@ -229,9 +230,9 @@ def main(
         # print(f"{color.RED}LoRA FT Model outputs ... {outputs}{color.END}")
         # print("---------------------------\n")
         return outputs
-
-    save_file = f'experiment/{args.model}-{args.adapter}-{args.dataset}.json'
-    create_dir('experiment/')
+    output_path = args.output_dir
+    save_file = f'{output_path}/{args.model}-{args.adapter}-{args.dataset}.json'
+    create_dir(f'{output_path}/')
 
     dataset = load_data(args)
     batches = create_batch(dataset, args.batch_size)
