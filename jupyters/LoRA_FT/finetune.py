@@ -209,7 +209,7 @@ def train(
         )
 
     if model.config.model_type == 'llama':
-        if 'Llama-3' in base_model or 'llama-3' in base_model:
+        if 'llama3' in base_model or 'llama-3' in base_model:
             print("load llama-3 tokenizer")
             tokenizer = AutoTokenizer.from_pretrained(base_model)
         else:

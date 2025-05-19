@@ -122,7 +122,7 @@ def load_model(args) -> tuple:
         raise ValueError(f'can not find lora weight, the value is: {lora_weights}')
 
     load_8bit = args.load_8bit
-    if "Llama-3" in base_model or "llama-3" in base_model:
+    if "Llama-3" in base_model or "llama3" in base_model:
         tokenizer = AutoTokenizer.from_pretrained(base_model)
     else:
         tokenizer = LlamaTokenizer.from_pretrained(base_model)
