@@ -193,6 +193,12 @@ def extract_answer(args, sentence: str) -> float:
         if not pred_answers:
             return ""
         return pred_answers[0]
+    elif not dataset:
+        sentence_ = sentence.strip()
+        pred_answers = re.findall(r'option1|option2|true|false|solution1|solution2|answer1|answer2|answer3|answer4|answer5|ending1|ending2|ending3|ending4', sentence_, flags=re.IGNORECASE)
+        if not pred_answers:
+            return ""
+        return pred_answers[0]
 
 
 def main(
