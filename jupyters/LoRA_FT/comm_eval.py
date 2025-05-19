@@ -40,7 +40,8 @@ class color:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"], required=True)
+    parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"], required=False)
+    parser.add_argument('--ds_dir', type=str, required=True)
     parser.add_argument('--adapter', default='LoRA', required=False)
     parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--base_model', type=str, required=True)
@@ -89,10 +90,16 @@ def load_data(args) -> list:
     Returns:
 
     """
-    file_path = f'/data/Datasets/LLM-Adapters/dataset/{args.dataset}/test.json'
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"can not find dataset file : {file_path}")
-    json_data = json.load(open(file_path, 'r'))
+    if args.dataset:
+        file_path = f'/data/Datasets/LLM-Adapters/dataset/{args.dataset}/test.json'
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"can not find dataset file : {file_path}")
+        json_data = json.load(open(file_path, 'r'))
+    elif args.ds_dir:
+        file_path = f'{args.ds_dir}'
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"can not find dataset file : {file_path}")
+        json_data = json.load(open(file_path, 'r'))
     return json_data
 
 
