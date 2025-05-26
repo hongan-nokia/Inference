@@ -41,7 +41,7 @@ class color:
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"], required=False)
-    parser.add_argument('--ds_dir', type=str, required=True)
+    parser.add_argument('--ds_dir', type=str, required=False)
     parser.add_argument('--adapter', default='LoRA', required=False)
     parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--base_model', type=str, required=True)
@@ -100,6 +100,7 @@ def load_data(args) -> list:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"can not find dataset file : {file_path}")
         json_data = json.load(open(file_path, 'r'))
+    print(f"json_data is ... {json_data}")
     return json_data
 
 
@@ -246,7 +247,7 @@ def main(
     output_path = args.output_dir
     save_file = f'{output_path}/{args.model}-{args.adapter}-{args.dataset}.json'
     create_dir(f'{output_path}/')
-
+    print(">>>>>>>>>>>>>> loading data ... ")
     dataset = load_data(args)
     batches = create_batch(dataset, args.batch_size)
 
@@ -299,6 +300,9 @@ def main(
             label = data.get('answer')
             flag = False
             predict = extract_answer(args, output)
+            print(f"data is ... {data}")
+            print(f"output is ... {output}")
+            print(f"predict is ... {predict}")
             if label.lower() == predict.lower():
                 correct += 1
                 flag = True
