@@ -16,7 +16,7 @@ import torch.utils.checkpoint
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
-from transformers import LlamaConfig, LlamaPreTrainedModel
+from transformers import LlamaConfig, LlamaPreTrainedModel, logger
 from transformers.models.llama.modeling_llama import LlamaDecoderLayer, LlamaRMSNorm
 
 from transformers.activations import ACT2FN

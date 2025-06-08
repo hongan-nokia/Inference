@@ -27,7 +27,7 @@ def build_position_embeddings(layer, config, seq_len, device):
     dummy_x = torch.zeros(1, seq_len, layer.self_attn.head_dim, device=device)
     position_ids = torch.arange(seq_len, device=device).unsqueeze(0)
     cos, sin = rope(dummy_x, position_ids)
-    return (cos, sin)
+    return cos, sin
 
 
 def run_manual_forward(layer, hidden_states, attention_mask, config, past_key_value=None, position_ids=None):
